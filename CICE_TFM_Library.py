@@ -101,3 +101,11 @@ def valorParametro(param):
 		return param.AsInteger()
 
 #......................................................................................................
+
+def currentSelection():
+	"""Obtengo elementos seleccionados tanto del modelo, como del Project Browser"""
+	def salida(x):
+		if len(x) == 1: return x[0]
+		else: return x
+	selid = uidoc.Selection.GetElementIds() #Ids seleccionados
+	return salida([doc.GetElement(id).ToDSType(True) for id in selid])
