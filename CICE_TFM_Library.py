@@ -56,6 +56,7 @@ doc =  DocumentManager.Instance.CurrentDBDocument
 app =  DocumentManager.Instance.CurrentUIApplication.Application
 UIDocument =  DocumentManager.Instance.CurrentUIDocument
 uiapp = DocumentManager.Instance.CurrentUIApplication
+actuiapp = uiapp.ActiveUIDocument
 
 ########################################################################################################################################################
 
@@ -107,5 +108,5 @@ def currentSelection():
 	def salida(x):
 		if len(x) == 1: return x[0]
 		else: return x
-	selid = uidoc.Selection.GetElementIds() #Ids seleccionados
+	selid = actuiapp.Selection.GetElementIds() #Ids seleccionados
 	return salida([doc.GetElement(id).ToDSType(True) for id in selid])
