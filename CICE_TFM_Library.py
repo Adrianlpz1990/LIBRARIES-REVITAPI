@@ -110,3 +110,32 @@ def currentSelection():
 		else: return x
 	selid = actuiapp.Selection.GetElementIds() #Ids seleccionados
 	return salida([doc.GetElement(id).ToDSType(True) for id in selid])
+
+#......................................................................................................
+
+def GetRoomBoundaries(item):
+	"""Obtengo las curvas y los puntos que definen el perimetro de una room"""
+	doc = item.Document
+	calculator = SpatialElementGeometryCalculator(doc)
+	options = Autodesk.Revit.DB.SpatialElementBoundaryOptions()
+	boundloc = Autodesk.Revit.DB.AreaVolumeSettings.GetAreaVolumeSettings(doc).GetSpatialElementBoundaryLocation(SpatialElementType.Room)
+	options.SpatialElementBoundaryLocation = boundloc
+	curvas = []
+	try:
+		for blist in item.GetBoundarySegments(options):
+			points = []
+			for b in blist:
+				curve = b.GetCurve().ToProtoType()
+				curvas.append(curve)
+				if curve.StartPoint not in points:
+					points.append(curve.StartPoint)
+				elif curve.EndPoint not in points:
+					points.append(curve.EndPoint)
+				else:
+					pass
+	except:
+		pass
+	return curvas, points
+
+#......................................................................................................
+
