@@ -103,6 +103,17 @@ def valorParametro(param):
 
 #......................................................................................................
 
+def allValueParameters(x, param):
+	"""Da el valor de los parámetros sin importar si el parametro esta completo o no"""
+	try:
+		value = valorParametro(x.LookupParameter(param))
+		return value
+	except:
+		value = ""
+		return value
+	
+#......................................................................................................
+
 def currentSelection():
 	"""Obtengo elementos seleccionados tanto del modelo, como del Project Browser"""
 	def salida(x):
