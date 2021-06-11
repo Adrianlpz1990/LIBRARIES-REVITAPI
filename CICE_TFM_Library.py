@@ -64,20 +64,17 @@ actuiapp = uiapp.ActiveUIDocument
 #VERSION HASTA 2021#
 def converToInt(param, valor):
 	"""Permite convertir las unidades del parametro de las de proyecto a internas"""
-	
 	UIunit = param.DisplayUnitsType
 	return UnitUtils.ConvertToInternalUnits(valor, UIunit)
 
 def projectUnits(x):
 	"""Lee el valor en unidades de proyecto"""
-
 	UIunit = Document.GetUnits(doc).GetFormatOptions(UnitType.UT_Length).DisplayUnits
 	return UnitUtils.ConvertFromInternalUnits(x, UIunit)
 
 #VERSIÓN 2021 EN ADELANTE#
 def converToInt2021(param, valor):
 	"""Permite convertir las unidades del parametro de las de proyecto a internas"""
-
 	UIunit = param.GetUnitTypeId()
 	return UnitUtils.ConvertToInternalUnits(valor, UIunit)
 
