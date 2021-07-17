@@ -147,3 +147,11 @@ def GetRoomBoundaries(item):
 
 #......................................................................................................
 
+def setParameters(e, dic, param, key):
+	"""Escribe el valor del parametro en el parametro del elemento obteniendo dicho valor de la clave de un diccionario"""
+	try:
+		e.LookupParameter(param).Set(dic[key])
+	except:
+		pass
+
+#......................................................................................................
