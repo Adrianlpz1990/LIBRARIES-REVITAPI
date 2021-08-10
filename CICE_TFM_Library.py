@@ -147,6 +147,12 @@ def GetRoomBoundaries(item):
 
 #......................................................................................................
 
+def createDictionary(keys, values):
+	"""Crea un diccionario partiendo de dos listas"""
+	return {keys[i] : values [i] for i in range(len(keys))}
+
+#......................................................................................................
+
 def setParameters(e, dic, param, key):
 	"""Escribe el valor del parametro en el parametro del elemento obteniendo dicho valor de la clave de un diccionario"""
 	try:
