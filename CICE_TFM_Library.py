@@ -46,6 +46,7 @@ from System import Array	#Listas
 from System.Collections.Generic import *	#Listas fuertemente tipadas, etc
 
 ###SISTEMA OPERATIVO###
+import shutil		#Tratamiento de archivos,copiar, borrar, mover, etc
 import os 
 
 ###EXCEPCIONES(ERRORES)###		Guardar excepciones
