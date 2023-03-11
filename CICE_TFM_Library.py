@@ -162,3 +162,58 @@ def setParameters(e, dic, param, key):
 		pass
 
 #......................................................................................................
+
+def unusedViewsCleanup(inicio, prefijo=':'):
+    """Limpieza de vistas sin uso en planos. Toda vista que este fuera de los planos es candidata para ser eliminada. Tiene en cuenta vistas con dependencias de otras; vistas de llamada o Callout que dependen de otra vista; se eliminan las leyendas que no esten alojadas en planos. El usuario puede evitar la eliminacion de aquellas vistas que inicien con un determinado prefijo.
+	Entrada:
+	inicio ‹bool›: True para eliminar.
+	prefijo ‹str›: Toda vista que inicie con ese prefijo se conserva. (Valor por defecto para prefijo dos puntos (caracter prohibido para nombres de vistas en Revit))
+	Salida:
+	Mensaje de exito o fallo ‹str>
+	Pag318-Las mil y una funciones"""
+    if inicio:
+        idsConservar = set()
+        planos = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Sheets).ToElements()
+        for plano in planos:
+            lista = plano.GetAllPlacedViews()
+            for id in lista:
+                idsConservar.add(id)
+                vista = doc.GetElement(id)
+                dependencia = vista.GetPrimaryViewId()
+                if dependencia.IntegerValue != -1:
+                    idsConservar.add(dependencia)
+                parametro = BuiltInParameter.SECTION_PARENT_VIEW_NAME
+                if vista.get_Parameter(parametro):
+                    pariente = vista.get_Parameter(parametro).AsElementId()
+                    if pariente.IntegerValue != -1:
+                        idsConservar.add(pariente)
+        
+        idsVistas = set([vista.Id for vista in FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Views).ToElements() if vista.IsTemplate is False and (vista.Name).startswith(prefijo) is False])
+        idsVistasSinUso = idsVistas.difference(idsConservar)
+        
+        if doc.ActiveView.Id in idsVistasSinUso:
+            salida = "La vista activa esta sin uso, vista activa para continuar."
+        else:
+            contador = 0
+            if bool(idsVistasSinUso):
+                TransactionManager.Instance.EnsureInTransaction(doc)
+                for id in idsVistasSinUso:
+                    try:
+                        doc.Delete(id)
+                        contador += 1
+                    except:
+                        pass
+                TransactionManager.Instance.TransactionTaskDone()
+                if contador == 0 and len(idsVistasSinUso) != 0:
+                    salida = "No se ha eliminado ninguna vista y existen {} vistas sin uso.".format(len(idsVistasSinUso))
+                elif contador != 0 and contador == len(idsVistasSinUso):
+                    salida = "Se han eliminado el 100% de las vistas sin uso (Total: {} vistas).".format(contador)
+                else:
+                    salida = "Se han eliminado {} vistas de {} vistas sin uso.".format(contador, len(idsVistasSinUso))
+            else:
+                salida = "No hay vistas sin uso que eliminar."
+    else:
+        salida = "Necesita un True para iniciar la ejecución."
+    return salida
+
+#......................................................................................................
