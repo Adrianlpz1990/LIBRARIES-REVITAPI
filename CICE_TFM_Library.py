@@ -338,3 +338,5 @@ def materialCleanUp(inicio, vistaName):
 	else:
 		salida = "Necesitas un True para \niniciar la ejecucion."
 	return salida
+
+#......................................................................................................
