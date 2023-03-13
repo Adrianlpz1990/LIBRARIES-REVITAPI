@@ -217,3 +217,78 @@ def unusedViewsCleanup(inicio, prefijo=':'):
     return salida
 
 #......................................................................................................
+
+def seleccionPorNombreRegla(palabra=None):
+	"""seleccionar una regla del asesor de rendimiento. Es necesario que se introduzca una palabra clave para localizar la regla.
+	Entradas:
+	Si el usuario no introduce ningun argumento extrae la lista completa de nombres para que pueda elegir.
+	nombre <str>: Nombre de la regla.
+	Salida:
+	Si se introduce correctamente el nombre, se obtiene el id de la regla. Si se encuentran multiples opciones se pide mas letras.
+	Pag336-Las mil y una funciones"""
+	regla = []
+	asesor = PerformanceAdviser.GetPerformanceAdviser()
+	ids = asesor.GetAllRuleIds()
+	nombres = [asesor.GetRuleName(id) for id in ids]
+	
+	if bool(palabra):
+		for id, nombre in zip(ids, nombres):
+			if palabra.lower() in nombre:
+				regla.append(id)
+			if regla:
+				salida = (regla[0] if len(regla) == 1 else "Afinar busqueda, multiples opciones.")
+			else:
+				salida = "Ninguna coincidencia"
+	else:
+		salida = sorted(nombres)
+	return salida
+
+#......................................................................................................
+
+def asesorEjecutarRegla(inicio, idRegla):
+	"""Esta funcion ejecuta una regla del asesor de rendimiento y aporta un lista con todos los ids que deben ser revisados de la regla intoducida.
+	Entrada:
+	inicio ‹bool›: True para iniciar
+	idRegla ‹PerformanceAdviserRuleId›: Regla a procesar
+	Salida: Mensaje <String>
+	Pag337-Las mil y una funciones"""
+	if inicio:
+		regla = List[PerformanceAdviserRuleId]([idRegla])
+		ejecutar = PerformanceAdviser.GetPerformanceAdviser().ExecuteRules(doc, regla)
+		if ejecutar:
+			salida = ejecutar[0].GetFailingElements()
+			adicionales = ejecutar[0].GetAdditionalElements()
+			salida.AddRange(adicionales)
+		else:
+			salida = None
+	else:
+		salida = "Introducir un True para iniciar."
+	return salida
+
+#......................................................................................................
+
+def unusedElementsCleanup(inicio):
+	"""Esta funcion limpia todos los elementos sin uso del modelo, para realizar esto se usa el PerformanceAdviser que da acceso al listado completo de familias y tipos sin uso.
+	Entrada:
+	inicio <bool›: True para iniciar
+	Salida: Mensaje <String>
+	Dependencia:
+	Funciones seleccionPorNombreRegla(), asesorEjecutarRegla()
+	Pag338-Las mil y una funciones"""
+	if inicio:
+		regla = seleccionPorNombreRegla("unused")
+		idsElementos = asesorEjecutarRegla(inicio, regla)
+	
+		if bool(idsElementos):
+			try:
+				TransactionManager.Instance.EnsureInTransaction(doc)
+				doc.Delete(List[ElementId](idsElementos))
+				TransactionManager.Instance.TransactionTaskDone()
+				salida = "Elementos accesibles eliminados."
+			except:
+				salida = "Fallo en la ejecución."
+		else:
+			salida = ("Nada que eliminar.""\nEl asesor de rendimiento aporta \nuna lista vacia.")
+	else:
+		salida = "Introducir un True para iniciar."
+	return salida
