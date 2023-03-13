@@ -292,3 +292,49 @@ def unusedElementsCleanup(inicio):
 	else:
 		salida = "Introducir un True para iniciar."
 	return salida
+
+#......................................................................................................
+
+def materialCleanUp(inicio, vistaName):
+	"""Limpia todos los materiales que no estan en uso en la vista elegida.
+	Mucho cuidado: Toda familia y tipo que no haya sido usado pierde sus materiales si no estan en uso en la vista activa.
+	Entrada: inicio ‹bool›: True para eliminar
+	Salida: Mensaje <String>
+	Pag349-Las mil y una funciones"""
+	idsConservar = set()
+	if inicio:
+		viewName = vistaName
+		allWiews = FilteredElementCollector(doc).OfClass(View)
+		vista = [v for v in allWiews if v.Name == viewName][0]
+		if vista.ViewType == ViewType. ThreeD:
+			filtro = Selection.SelectableInViewFilter(doc, vista.Id)
+			colector = (FilteredElementCollector(doc).WherePasses(filtro).ToElements())
+			for elemento in colector:
+				[idsConservar.add(mat) for mat in elemento.GetMaterialIds(True)]
+				[idsConservar.add(mat) for mat in elemento.GetMaterialIds(False)]
+			idsMateriales = set(material.Id for material in FilteredElementCollector(doc).OfClass(Material))
+			idsMaterialesSinUso=idsMateriales.difference(idsConservar)
+			contador = 0
+			if bool(idsMaterialesSinUso):
+				TransactionManager.Instance.EnsureInTransaction(doc)
+				for id in idsMaterialesSinUso:
+					try:
+						doc.Delete(id)
+						contador += 1
+					except:
+						pass
+				TransactionManager.Instance.TransactionTaskDone()
+				
+				if contador == 0 and len(idsMaterialesSinUso) != 0:
+					salida = (("No se ha eliminado ningun material \ny existen {} materiales sin uso.").format(len(idsMaterialesSinUso)))
+				elif contador != 0 and contador == len(idsMaterialesSinUso):
+					salida = (("Se han eliminado el 100% de los \materiales sin uso (Total: () materiales)").format(contador))
+				else:
+					salida = (("Se han eliminado () materiales \nde () materiales sin uso.").format (contador, len(idsMaterialesSinUso)))
+			else:
+				salida = "No hay materiales sin \nuso que eliminar."
+		else:
+			salida = "Necesitas una vista 3D para completar la ejecucion."
+	else:
+		salida = "Necesitas un True para \niniciar la ejecucion."
+	return salida
