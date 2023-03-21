@@ -294,49 +294,47 @@ def unusedElementsCleanup(inicio):
 	return salida
 
 #......................................................................................................
-
-def materialCleanUp(inicio, vistaName):
-	"""Limpia todos los materiales que no estan en uso en la vista elegida.
-	Mucho cuidado: Toda familia y tipo que no haya sido usado pierde sus materiales si no estan en uso en la vista activa.
-	Entrada: inicio ‹bool›: True para eliminar
-	Salida: Mensaje <String>
-	Pag349-Las mil y una funciones"""
-	idsConservar = set()
+def unusedSchedulesCleanup(inicio, prefijo=None):
+	"""Uso:Limpieza de tablas sin uso en planos. Toda tabla que este fuera de los planos es candidata para ser eliminada. El usuario puede evitar la eliminacion de aquellas que inicien con un determinado prefijo.
+	Entrada:
+	inicio ‹bool›: True para eliminar.
+	prefijo <str›: Toda tabla que inicie con ese prefijo se conserva.
+	Valor nulo por defecto para prefijo
+	Salida:
+	Mensaje de exito o fallo <str>
+	Pag320-Las mil y una funciones"""
 	if inicio:
-		viewName = vistaName
-		allWiews = FilteredElementCollector(doc).OfClass(View)
-		vista = [v for v in allWiews if v.Name == viewName][0]
-		if vista.ViewType == ViewType. ThreeD:
-			filtro = Selection.SelectableInViewFilter(doc, vista.Id)
-			colector = (FilteredElementCollector(doc).WherePasses(filtro).ToElements())
-			for elemento in colector:
-				[idsConservar.add(mat) for mat in elemento.GetMaterialIds(True)]
-				[idsConservar.add(mat) for mat in elemento.GetMaterialIds(False)]
-			idsMateriales = set(material.Id for material in FilteredElementCollector(doc).OfClass(Material))
-			idsMaterialesSinUso=idsMateriales.difference(idsConservar)
+		idsConservar = set([tabla.ScheduleId for tabla in FilteredElementCollector(doc).OfClass(ScheduleSheetInstance).ToElements()])
+		if prefijo:
+			ids = set([tabla.Id for tabla in FilteredElementCollector(doc).OfClass(ViewSchedule).ToElements() if not tabla.Name.startswith(prefijo)])
+		else:
+			ids = set([tabla.Id for tabla in FilteredElementCollector(doc).OfClass(ViewSchedule).ToElements()])
+	
+		idsTablasSinUso = ids.difference(idsConservar)
+	
+		if doc.ActiveView.Id.IntegerValue in idsTablasSinUso:
+			salida = "La vista activa está en uso, es necesario cambiar de vista activa para continuar."
+		else:
 			contador = 0
-			if bool(idsMaterialesSinUso):
+			if idsTablasSinUso:
 				TransactionManager.Instance.EnsureInTransaction(doc)
-				for id in idsMaterialesSinUso:
+				for id in idsTablasSinUso:
 					try:
 						doc.Delete(id)
 						contador += 1
 					except:
 						pass
 				TransactionManager.Instance.TransactionTaskDone()
-				
-				if contador == 0 and len(idsMaterialesSinUso) != 0:
-					salida = (("No se ha eliminado ningun material \ny existen {} materiales sin uso.").format(len(idsMaterialesSinUso)))
-				elif contador != 0 and contador == len(idsMaterialesSinUso):
-					salida = (("Se han eliminado el 100% de los \materiales sin uso (Total: () materiales)").format(contador))
+			
+				if contador == 0 and len(idsTablasSinUso) != 0:
+					salida = (("No se ha eliminado ninguna tabla \ny existen {} tablas sin uso.").format(len(idsTablasSinUso)))
+				elif contador != 0 and contador == len(idsTablasSinUso):
+					salida = (("Se han eliminado el 100% de las tablas \nsin uso (Total: {} tablas)").format(contador))
 				else:
-					salida = (("Se han eliminado () materiales \nde () materiales sin uso.").format (contador, len(idsMaterialesSinUso)))
+					salida = (("Se han eliminado {} tablas \nde {} tablas sin uso.").format(contador, len(idsTablasSinUso)))
 			else:
-				salida = "No hay materiales sin \nuso que eliminar."
-		else:
-			salida = "Necesitas una vista 3D para completar la ejecucion."
+				salida = "No hay tablas sin uso que eliminar."
 	else:
-		salida = "Necesitas un True para \niniciar la ejecucion."
+		salida = "Necesita un True para iniciar \nla ejecución."
 	return salida
-
 #......................................................................................................
