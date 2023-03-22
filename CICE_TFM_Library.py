@@ -295,7 +295,7 @@ def unusedElementsCleanup(inicio):
 
 #......................................................................................................
 def unusedSchedulesCleanup(inicio, prefijo=None):
-	"""Uso:Limpieza de tablas sin uso en planos. Toda tabla que este fuera de los planos es candidata para ser eliminada. El usuario puede evitar la eliminacion de aquellas que inicien con un determinado prefijo.
+	"""Limpieza de tablas sin uso en planos. Toda tabla que este fuera de los planos es candidata para ser eliminada. El usuario puede evitar la eliminacion de aquellas que inicien con un determinado prefijo.
 	Entrada:
 	inicio ‹bool›: True para eliminar.
 	prefijo <str›: Toda tabla que inicie con ese prefijo se conserva.
@@ -334,6 +334,34 @@ def unusedSchedulesCleanup(inicio, prefijo=None):
 					salida = (("Se han eliminado {} tablas \nde {} tablas sin uso.").format(contador, len(idsTablasSinUso)))
 			else:
 				salida = "No hay tablas sin uso que eliminar."
+	else:
+		salida = "Necesita un True para iniciar \nla ejecución."
+	return salida
+#......................................................................................................
+def deleteRevitLinks(inicio, documento):
+	"""Limpieza de Revit Links.
+	Entrada:
+	inicio ‹bool›: True para eliminar.
+	documento: Documento existente.
+	Salida:
+	Mensaje de exito o fallo <str>"""
+	if inicio:
+		links = FilteredElementCollector(documento).OfClass(RevitLinkType)
+		vinculos, enlaces = [],[]
+		for l in links:
+			if l.IsNestedLink:
+				enlaces.append(l)
+			else:
+				vinculos.append(l)
+		salida = "No hay Revit Links"
+		try:
+			TransactionManager.Instance.EnsureInTransaction(doc)
+			for v in vinculos:
+				doc.Delete(v.Id)
+				salida = "Revit Links eliminados"
+			TransactionManager.Instance.TransactionTaskDone()
+		except:
+			pass
 	else:
 		salida = "Necesita un True para iniciar \nla ejecución."
 	return salida
