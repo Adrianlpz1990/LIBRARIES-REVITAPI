@@ -366,3 +366,11 @@ def deleteRevitLinks(inicio, documento):
 		salida = "Necesita un True para iniciar \nla ejecución."
 	return salida
 #......................................................................................................
+def getViewSheets(sheet):
+	"""Obtengo vistas contenidas en una sheet (Viewports, ViewportTypes,Views y ViewNames)"""
+	vport = FilteredElementCollector(doc, sheet.Id).OfClass(Viewport)
+	viewportType = [valorParametro(x.get_Parameter(BuiltInParameter.ELEM_TYPE_PARAM)) for x in vport]
+	views = [doc.GetElement(vp.ViewId) for vp in vport]
+	view_names = [view.Name for view in views]
+	return vport, viewportType, views, view_names
+#......................................................................................................
