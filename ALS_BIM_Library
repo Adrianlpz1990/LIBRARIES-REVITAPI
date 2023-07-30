@@ -374,4 +374,13 @@ def getViewSheets(sheet):
 	view_names = [view.Name for view in views]
 	return vport, viewportType, views, view_names
 #......................................................................................................
-
+def flattenList(lst):
+	"""Aplana una lista"""
+	flattened_list = []
+	for item in lst:
+		if isinstance(item, list):
+			flattened_list.extend(flatten_list(item))
+		else:
+			flattened_list.append(item)
+	return flattened_list
+#......................................................................................................
