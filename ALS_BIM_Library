@@ -147,6 +147,17 @@ def GetRoomBoundaries(item):
 	return curvas, points
 
 #......................................................................................................
+def GetLongestCurve(curves):
+	"""Obtengo la curva mas larga de un conjunto de curvas"""
+	longest_curve = None
+	longest_length = 0.0
+	for curve in curves:
+		length = curve.Length
+		if length > longest_length:
+			longest_curve = curve
+			longest_length = length
+	return longest_curve
+#......................................................................................................
 
 def createDictionary(keys, values):
 	"""Crea un diccionario partiendo de dos listas"""
